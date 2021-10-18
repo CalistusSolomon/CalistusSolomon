@@ -1,0 +1,101 @@
+Option Explicit
+Sub Delete_Sheet()
+
+Dim Can_Sheet As Worksheet
+
+Application.DisplayAlerts = False
+
+For Each Can_Sheet In ThisWorkbook.Sheets
+
+If Can_Sheet.Name <> "MAIN" And _
+Can_Sheet.Name <> "INPUT" And _
+Can_Sheet.Name <> "ENGINE" Then Can_Sheet.Delete
+
+Next Can_Sheet
+
+Application.DisplayAlerts = True
+
+End Sub
+
+Sub Create_Sheet()
+
+Dim Pages As Integer
+Dim Cal_Sheet As Worksheet
+Dim End_Row As Long 'Identifies the last row of the data
+Dim Sheet_Name As String 'stores sheet name
+
+Call Delete_Sheet
+
+'find the number of sheet to be created
+
+With Sheets("ENGINE")
+
+End_Row = .Cells(Rows.Count, 2).End(xlUp).Row
+
+End With
+
+'Select the main sheet and copy the sheet
+Pages = 9
+
+For Pages = 9 To End_Row
+
+    Sheet_Name = Sheets("ENGINE").Range("L" & Pages)
+    Sheets("MAIN").Activate
+    Sheets("MAIN").Cells.Select
+    Selection.Copy
+    Sheets.Add After:=Sheets(Sheets.Count)
+    ActiveSheet.Paste
+    ActiveSheet.Name = Sheet_Name
+    ActiveSheet.Range("B8") = Sheets("ENGINE").Range("M3") & Sheets("ENGINE").Range("A" & Pages) 'Do number
+    ActiveSheet.Range("F9") = Sheets("ENGINE").Range("E6") 'Do Date
+    ActiveSheet.Range("B19") = Sheets("ENGINE").Range("M4") 'Vessel name
+    ActiveSheet.Range("B20") = Sheets("ENGINE").Range("G3") 'Arrival Date
+    ActiveSheet.Range("B21") = Sheets("ENGINE").Range("G4") 'Loading Port
+    ActiveSheet.Range("A24") = Sheets("ENGINE").Range("I3") 'Container Number
+    ActiveSheet.Range("B24") = Sheets("ENGINE").Range("I5") 'Seal Number
+    ActiveSheet.Range("C24") = Sheets("ENGINE").Range("I4") 'Container size
+    ActiveSheet.Range("B17") = Sheets("ENGINE").Range("C" & Pages) 'BL number
+    ActiveSheet.Range("B18") = Sheets("ENGINE").Range("E" & Pages) 'Consignee name
+    ActiveSheet.Range("E24") = Sheets("ENGINE").Range("J" & Pages) 'Weight
+    ActiveSheet.Range("F24") = Sheets("ENGINE").Range("K" & Pages) 'Volume
+    ActiveSheet.Range("A29") = Sheets("ENGINE").Range("M" & Pages) 'Goods Description
+    ActiveSheet.Range("A32") = Sheets("ENGINE").Range("F" & Pages) 'Marks and number
+Next Pages
+
+'Display completion Alert
+
+Sheets("ENGINE").Select
+MsgBox "Task Completed", 0, "Document Creation"
+
+End Sub
+
+Sub Export_PDF()
+
+Dim Folder_Path As String 'folder path
+Dim sh As Worksheet 'worksheet
+
+With Application.FileDialog(msoFileDialogFolderPicker)
+    .Title = "Select the Folder Path"
+
+If .Show = -1 Then
+Folder_Path = .SelectedItems(1)
+
+For Each sh In ActiveWorkbook.Worksheets
+
+If sh.Name <> "MAIN" And _
+sh.Name <> "ENGINE" Then _
+sh.ExportAsFixedFormat xlTypePDF, Folder_Path & Application.PathSeparator & sh.Name & ".pdf"
+
+Next
+MsgBox "PDF Created"
+
+'If Cancel is pressed
+Else: MsgBox "File not selected, Macro stopped"
+
+End If
+End With
+
+End Sub
+
+
+
